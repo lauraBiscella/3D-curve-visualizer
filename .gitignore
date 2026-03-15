@@ -1,0 +1,104 @@
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Unity generated folders
+# =========================
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+
+# =========================
+# Addressables
+# =========================
+[Aa]ssets/StreamingAssets/aa*
+[Aa]ssets/Addressables_Temp*
+[Ss]erver[Dd]ata/
+
+# =========================
+# IDE files
+# =========================
+
+# Visual Studio
+.vs/
+*.csproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# JetBrains Rider
+.idea/
+*.DotSettings.user
+
+# VSCode
+.vscode/
+
+# =========================
+# Unity auto generated meta
+# =========================
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Crash reports
+# =========================
+sysinfo.txt
+mono_crash.*
+
+# =========================
+# Builds
+# =========================
+*.apk
+*.aab
+*.unitypackage
+*.app
+
+# =========================
+# Blender temp files
+# =========================
+*.blend1
+*.blend1.meta
+
+# =========================
+# Test runner
+# =========================
+InitTestScene*.unity*
+
+# =========================
+# Visual Scripting
+# =========================
+[Aa]ssets/Unity.VisualScripting.Generated/
+
+# =========================
+# Gradle cache
+# =========================
+.gradle/
+
+# =========================
+# Unity Cloud Diagnostics
+# =========================
+crashlytics-build.properties
