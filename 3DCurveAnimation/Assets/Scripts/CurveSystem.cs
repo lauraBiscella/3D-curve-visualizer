@@ -4,23 +4,45 @@ using System.Collections.Generic;
 public class CurveSystem : MonoBehaviour
 {
     public GameObject controlPointPrefab;
-
+    public GameObject controlPolygonPrefab;
+    public GameObject bezierCurvePrefab;
     public LineRenderer controlPolygon;
     public LineRenderer bezierCurve;
 
     private List<Transform> points = new List<Transform>();
 
     public int curveResolution = 100;
+    private bool lineRenderersInstantiated = false;
 
-    void Update()
+    protected virtual void Update()
     {
         HandleMouseClick();
 
         if(points.Count == 4)
         {
+            if(!lineRenderersInstantiated)
+            {
+                GameObject cp = Instantiate(controlPolygonPrefab, Vector3.zero, Quaternion.identity);
+                controlPolygon = cp.GetComponent<LineRenderer>();
+
+                GameObject bc = Instantiate(bezierCurvePrefab, Vector3.zero, Quaternion.identity);
+                bezierCurve = bc.GetComponent<LineRenderer>();
+
+                lineRenderersInstantiated = true;
+            }
             DrawControlPolygon();
             DrawBezierCurve();
         }
+    }
+
+    public bool HasFourElements()
+    {
+        return points.Count == 4;
+    }   
+
+    public List<Transform> GetPoints()
+    {
+        return points;
     }
 
     void HandleMouseClick()
@@ -40,6 +62,7 @@ public class CurveSystem : MonoBehaviour
 
     void DrawControlPolygon()
     {
+        if (controlPolygon == null) return;
         controlPolygon.positionCount = points.Count;
 
         for(int i=0;i<points.Count;i++)
@@ -50,6 +73,7 @@ public class CurveSystem : MonoBehaviour
 
     void DrawBezierCurve()
     {
+        if (bezierCurve == null) return;
         bezierCurve.positionCount = curveResolution;
 
         for(int i=0;i<curveResolution;i++)
