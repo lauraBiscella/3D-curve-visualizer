@@ -380,7 +380,7 @@ GameObject:
   - component: {fileID: 372310241}
   - component: {fileID: 372310240}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: UI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -864,6 +864,8 @@ MonoBehaviour:
   curvatureGraph: {fileID: 818356440}
   torsionGraph: {fileID: 448006544}
   curveResolution: 100
+  tSlider: {fileID: 1597647499}
+  pointIndicatorPrefab: {fileID: 1418986021585172692, guid: 1ca6dbb70d140e3478fc62bc2cdc7d4d, type: 3}
 --- !u!1 &540293754
 GameObject:
   m_ObjectHideFlags: 0
@@ -1597,37 +1599,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 753868689}
   m_CullTransparentMesh: 1
---- !u!1 &760613759
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 760613761}
-  m_Layer: 0
-  m_Name: CurveController
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &760613761
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 760613759}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1547.0403, y: -0.00004, z: -1930.4813}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &818356437
 GameObject:
   m_ObjectHideFlags: 0
@@ -3072,4 +3043,3 @@ SceneRoots:
   - {fileID: 535509373}
   - {fileID: 372310243}
   - {fileID: 1263357955}
-  - {fileID: 760613761}

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 
 public class CurveSystem : MonoBehaviour
@@ -9,14 +10,22 @@ public class CurveSystem : MonoBehaviour
     [SerializeField] private GraphRenderer curvatureGraph;
     [SerializeField] private GraphRenderer torsionGraph;  
     [SerializeField] private int curveResolution = 100;
+    [SerializeField] private Slider tSlider;
+    [SerializeField] private GameObject pointIndicatorPrefab;
     private List<Transform> controlPoints = new List<Transform>();
     private LineRenderer controlPolygon;
     private LineRenderer bezierCurve;
     private List<float> curvatureValues = new List<float>();
     private List<float> torsionValues = new List<float>();
     private bool lineRenderersInstantiated = false;
+    private GameObject pointIndicator;
 
-    protected virtual void Update()
+    void Start()
+    {
+        pointIndicator = Instantiate(pointIndicatorPrefab, new Vector3(-300, -300, 0), Quaternion.identity);
+        tSlider.onValueChanged.AddListener(OnSliderChanged);
+    }
+    void Update()
     {
         HandleMouseClick();
 
@@ -56,6 +65,18 @@ public class CurveSystem : MonoBehaviour
                 controlPoints.Add(p.transform);
             }
         }
+    }
+
+    void OnSliderChanged(float t)
+    {
+        if (!HasFourElements()) return;
+        Vector3 bezierPos = BezierPoint(t, controlPoints.Count - 1);
+        pointIndicator.transform.position = bezierPos;
+
+        if (curvatureGraph != null)
+            curvatureGraph.SetMarkerNormalized(t); 
+        if (torsionGraph != null)
+            torsionGraph.SetMarkerNormalized(t); 
     }
 
     void DrawControlPolygon()

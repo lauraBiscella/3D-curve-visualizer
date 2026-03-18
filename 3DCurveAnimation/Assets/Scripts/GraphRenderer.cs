@@ -12,6 +12,8 @@ public class GraphRenderer : MonoBehaviour
 
     private RawImage graphImage;
     private Texture2D tex;
+    private int markerX = -1; 
+    private List<float> currentValues;
 
     void Awake()
     {
@@ -42,7 +44,8 @@ public class GraphRenderer : MonoBehaviour
             labelMax.text = "";
 
         float range = maxVal - minVal;
-        if (range < 0.0001f) range = 1f;
+        if (range < 0.0001f) 
+            range = 1f;
 
         int count = values.Count;
         for (int i = 0; i < count - 1; i++)
@@ -58,7 +61,26 @@ public class GraphRenderer : MonoBehaviour
             DrawLine(x0, y0, x1, y1, lineColor, 1);
         }
 
+        int thickness = 1;
+        for (int dx = -thickness/2; dx <= thickness/2; dx++)
+        {
+            int x = markerX + dx;
+            if (x >= 0 && x < width)
+            {
+                for (int y = 0; y < height; y++)
+                    tex.SetPixel(x, y, Color.red);
+            }
+        }
+
         tex.Apply();
+    }
+
+    public void SetMarkerNormalized(float tNormalized)
+    {
+        markerX = Mathf.RoundToInt(tNormalized * (width - 1));
+
+        if (currentValues != null)
+            DrawGraph(currentValues);
     }
 
     void ClearTexture()
