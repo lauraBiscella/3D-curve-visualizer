@@ -3,22 +3,24 @@ using System.Collections.Generic;
 
 public class CurveSystem : MonoBehaviour
 {
-    public GameObject controlPointPrefab;
-    public GameObject controlPolygonPrefab;
-    public GameObject bezierCurvePrefab;
-    public LineRenderer controlPolygon;
-    public LineRenderer bezierCurve;
-
-    private List<Transform> points = new List<Transform>();
-
-    public int curveResolution = 100;
+    [SerializeField] private GameObject controlPointPrefab;
+    [SerializeField] private GameObject controlPolygonPrefab;
+    [SerializeField] private GameObject bezierCurvePrefab; 
+    [SerializeField] private GraphRenderer curvatureGraph;
+    [SerializeField] private GraphRenderer torsionGraph;  
+    [SerializeField] private int curveResolution = 100;
+    private List<Transform> controlPoints = new List<Transform>();
+    private LineRenderer controlPolygon;
+    private LineRenderer bezierCurve;
+    private List<float> curvatureValues = new List<float>();
+    private List<float> torsionValues = new List<float>();
     private bool lineRenderersInstantiated = false;
 
     protected virtual void Update()
     {
         HandleMouseClick();
 
-        if(points.Count == 4)
+        if(HasFourElements())
         {
             if(!lineRenderersInstantiated)
             {
@@ -32,22 +34,18 @@ public class CurveSystem : MonoBehaviour
             }
             DrawControlPolygon();
             DrawBezierCurve();
+            DrawAnalytics();
         }
     }
 
     public bool HasFourElements()
     {
-        return points.Count == 4;
+        return controlPoints.Count == 4;
     }   
-
-    public List<Transform> GetPoints()
-    {
-        return points;
-    }
 
     void HandleMouseClick()
     {
-        if(Input.GetMouseButtonDown(0) && points.Count < 4)
+        if(Input.GetMouseButtonDown(0) && controlPoints.Count < 4)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
@@ -55,7 +53,7 @@ public class CurveSystem : MonoBehaviour
             if(Physics.Raycast(ray, out hit))
             {
                 GameObject p = Instantiate(controlPointPrefab, hit.point, Quaternion.identity);
-                points.Add(p.transform);
+                controlPoints.Add(p.transform);
             }
         }
     }
@@ -63,11 +61,11 @@ public class CurveSystem : MonoBehaviour
     void DrawControlPolygon()
     {
         if (controlPolygon == null) return;
-        controlPolygon.positionCount = points.Count;
+        controlPolygon.positionCount = controlPoints.Count;
 
-        for(int i=0;i<points.Count;i++)
+        for(int i=0;i<controlPoints.Count;i++)
         {
-            controlPolygon.SetPosition(i, points[i].position);
+            controlPolygon.SetPosition(i, controlPoints[i].position);
         }
     }
 
@@ -76,22 +74,123 @@ public class CurveSystem : MonoBehaviour
         if (bezierCurve == null) return;
         bezierCurve.positionCount = curveResolution;
 
-        for(int i=0;i<curveResolution;i++)
+        for(int i=0; i<curveResolution; i++)
         {
             float t = i/(float)(curveResolution-1);
-            Vector3 pos = BezierPoint(t);
-            bezierCurve.SetPosition(i,pos);
+            bezierCurve.SetPosition(i, BezierPoint(t, controlPoints.Count - 1));
         }
     }
 
-    Vector3 BezierPoint(float t)
+    void DrawAnalytics()
     {
-        float u = 1-t;
+        ComputeAnalytics();
+        curvatureGraph.DrawGraph(curvatureValues);
+        torsionGraph.DrawGraph(torsionValues);
+    }
 
-        return
-            u*u*u*points[0].position +
-            3*u*u*t*points[1].position +
-            3*u*t*t*points[2].position +
-            t*t*t*points[3].position;
+    void ComputeAnalytics()
+    {
+        curvatureValues.Clear();
+        torsionValues.Clear();
+        float curvature = 0;
+        float torsion = 0;
+
+        for(int i=0;i<curveResolution;i++)
+        {
+            float t = i/(float)(curveResolution-1);
+            Vector3 d1 = FirstDerivative(t);
+            Vector3 d2 = SecondDerivative(t);
+            Vector3 d3 = ThirdDerivative(t);
+            curvature = ComputeCurvature(d1, d2);
+            torsion = ComputeTorsion(d1, d2, d3);
+            curvatureValues.Add(curvature);
+            torsionValues.Add(torsion);
+        }
+    }
+
+    float ComputeCurvature(Vector3 d1, Vector3 d2)
+    {
+        float denom1 = Mathf.Pow(d1.magnitude,3);
+        float curvature = 0f;
+        if(denom1 > 0.0001f)
+        {
+            curvature = Vector3.Cross(d1,d2).magnitude / denom1;
+        }
+        return curvature;
+    }
+
+    float ComputeTorsion(Vector3 d1, Vector3 d2, Vector3 d3)
+    {
+        float crossMag = Vector3.Cross(d1,d2).magnitude;
+        float torsion = 0f;
+        if(crossMag > 0.0001f)
+        {
+            torsion = Vector3.Dot(Vector3.Cross(d1,d2),d3) / (crossMag*crossMag);
+        }
+        return torsion;
+    }
+
+    Vector3 BezierPoint(float t, int k)
+    {
+        Vector3 point = new Vector3(0,0,0);
+        for (int i=0; i <= k; i++)
+        {
+           float b = BernsteinPolynomial(k, i, t);
+           point += controlPoints[i].position * b;
+        }
+
+        return point;
+    }
+
+    float Binomial(int n, int k)
+    {
+        float result = 1;
+        for (int i = 1; i <= k; i++)
+        {
+            result *= n - (k-i);
+            result /= i;
+        }
+        return result;
+    }
+
+    float BernsteinPolynomial(int k, int i, float t)
+    {
+        return Binomial(k, i) * Mathf.Pow(t, i) * Mathf.Pow(1-t, k-i);
+    }
+
+    Vector3 FirstDerivative(float t)
+    {
+        int n = controlPoints.Count - 1;
+        Vector3 sum = Vector3.zero;
+        for (int i = 0; i < n; i++)
+        {
+            sum += (controlPoints[i + 1].position - controlPoints[i].position) * BernsteinPolynomial(n - 1, i, t);
+        }
+        sum = sum * (float)n;
+        return sum;
+    }
+
+    Vector3 SecondDerivative(float t)
+    {
+        int n = controlPoints.Count - 1;
+        Vector3 sum = Vector3.zero;
+        for (int i = 0; i < n - 1; i++)
+        {
+            sum += (controlPoints[i + 2].position - 2 * controlPoints[i + 1].position + controlPoints[i].position) * BernsteinPolynomial(n - 2, i, t);
+        }
+        sum = sum * (float)(n * (n - 1));
+        return sum;
+    }
+
+    Vector3 ThirdDerivative(float t)
+    {
+        int n = controlPoints.Count - 1;
+        Vector3 sum = Vector3.zero;
+        for (int i = 0; i < n - 2; i++)
+        {
+            sum += (controlPoints[i + 3].position - 3 * controlPoints[i + 2].position + 3 * controlPoints[i + 1].position - controlPoints[i].position) * BernsteinPolynomial(n - 3, i, t);
+        }
+        sum = sum * (float)(n * (n - 1) * (n - 2));
+        return sum;
     }
 }
