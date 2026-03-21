@@ -61,14 +61,15 @@ public class GraphRenderer : MonoBehaviour
             DrawLine(x0, y0, x1, y1, lineColor, 1);
         }
 
-        int thickness = 1;
+        // Marker come linea verticale più spessa
+        int thickness = 3; // aumenti questo valore per una linea più spessa
         for (int dx = -thickness/2; dx <= thickness/2; dx++)
         {
             int x = markerX + dx;
             if (x >= 0 && x < width)
             {
                 for (int y = 0; y < height; y++)
-                    tex.SetPixel(x, y, Color.red);
+                    tex.SetPixel(x, y, Color.red); // colore rosso
             }
         }
 

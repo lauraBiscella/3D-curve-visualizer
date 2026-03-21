@@ -12,7 +12,8 @@ public class CurveSystem : MonoBehaviour
     [SerializeField] private int curveResolution = 100;
     [SerializeField] private Slider tSlider;
     [SerializeField] private GameObject pointIndicatorPrefab;
-    private List<Transform> controlPoints = new List<Transform>();
+    [SerializeField] private CurveInfoPanel infoPanel;
+    public List<Transform> controlPoints = new List<Transform>();
     private LineRenderer controlPolygon;
     private LineRenderer bezierCurve;
     private List<float> curvatureValues = new List<float>();
@@ -44,6 +45,7 @@ public class CurveSystem : MonoBehaviour
             DrawControlPolygon();
             DrawBezierCurve();
             DrawAnalytics();
+            RefreshSliderPosition();
         }
     }
 
@@ -67,6 +69,13 @@ public class CurveSystem : MonoBehaviour
         }
     }
 
+    void RefreshSliderPosition()
+    {
+        if (!HasFourElements()) return;
+
+        float t = tSlider.value;
+        OnSliderChanged(t);
+    }
     void OnSliderChanged(float t)
     {
         if (!HasFourElements()) return;
@@ -77,6 +86,8 @@ public class CurveSystem : MonoBehaviour
             curvatureGraph.SetMarkerNormalized(t); 
         if (torsionGraph != null)
             torsionGraph.SetMarkerNormalized(t); 
+        if (infoPanel != null)
+            infoPanel.UpdateInfo(t);
     }
 
     void DrawControlPolygon()
@@ -140,6 +151,19 @@ public class CurveSystem : MonoBehaviour
         return curvature;
     }
 
+    public float ComputeCurvatureSingleValue(float t)
+    {
+        Vector3 d1 = FirstDerivative(t);
+        Vector3 d2 = SecondDerivative(t);
+        float denom1 = Mathf.Pow(d1.magnitude,3);
+        float curvature = 0f;
+        if(denom1 > 0.0001f)
+        {
+            curvature = Vector3.Cross(d1,d2).magnitude / denom1;
+        }
+        return curvature;
+    }
+
     float ComputeTorsion(Vector3 d1, Vector3 d2, Vector3 d3)
     {
         float crossMag = Vector3.Cross(d1,d2).magnitude;
@@ -151,7 +175,21 @@ public class CurveSystem : MonoBehaviour
         return torsion;
     }
 
-    Vector3 BezierPoint(float t, int k)
+    public float ComputeTorsionSingleValue(float t)
+    {
+        Vector3 d1 = FirstDerivative(t);
+        Vector3 d2 = SecondDerivative(t);
+        Vector3 d3 = ThirdDerivative(t);
+        float crossMag = Vector3.Cross(d1,d2).magnitude;
+        float torsion = 0f;
+        if(crossMag > 0.0001f)
+        {
+            torsion = Vector3.Dot(Vector3.Cross(d1,d2),d3) / (crossMag*crossMag);
+        }
+        return torsion;
+    }
+
+    public Vector3 BezierPoint(float t, int k)
     {
         Vector3 point = new Vector3(0,0,0);
         for (int i=0; i <= k; i++)
