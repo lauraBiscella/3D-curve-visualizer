@@ -26,10 +26,13 @@ namespace BezierCurves
             graphImage.texture = tex;
         }
 
-        public void DrawGraph(List<float> values)
+        public void DrawGraph(List<float> values, bool allowNegativeY = false)
         {
             if (values == null || values.Count < 2) return;
             
+            currentValues = values;
+
+            if (tex == null) return; 
             ClearTexture();
 
             float minVal = float.MaxValue;
@@ -40,38 +43,48 @@ namespace BezierCurves
                 if (v > maxVal) maxVal = v;
             }
 
-            if (maxVal != 0)
-                labelMax.text = maxVal.ToString("F2");
-            else
-                labelMax.text = "";
+            if (labelMax != null)
+                labelMax.text = allowNegativeY ? Mathf.Max(Mathf.Abs(minVal), Mathf.Abs(maxVal)).ToString("F2") : maxVal.ToString("F2");
 
-            float range = maxVal - minVal;
-            if (range < 0.0001f) 
-                range = 1f;
+            float range = allowNegativeY ? Mathf.Max(Mathf.Abs(minVal), Mathf.Abs(maxVal)) : maxVal - minVal;
+            if (range < 0.0001f) range = 1f;
 
             int count = values.Count;
             for (int i = 0; i < count - 1; i++)
             {
-                float normalizedY0 = (values[i] - minVal) / range;
-                float normalizedY1 = (values[i + 1] - minVal) / range;
+                int y0, y1;
+                if (allowNegativeY)
+                {
+                    float normalizedY0 = values[i] / range;
+                    float normalizedY1 = values[i + 1] / range;
+
+                    y0 = Mathf.RoundToInt(height / 2f + normalizedY0 * (height / 2f));
+                    y1 = Mathf.RoundToInt(height / 2f + normalizedY1 * (height / 2f));
+                }
+                else
+                {
+                    float normalizedY0 = (values[i] - minVal) / range;
+                    float normalizedY1 = (values[i + 1] - minVal) / range;
+
+                    y0 = Mathf.RoundToInt(normalizedY0 * (height - 1));
+                    y1 = Mathf.RoundToInt(normalizedY1 * (height - 1));
+                }
 
                 int x0 = Mathf.RoundToInt(i * (width - 1f) / (count - 1));
                 int x1 = Mathf.RoundToInt((i + 1) * (width - 1f) / (count - 1));
-                int y0 = Mathf.RoundToInt(normalizedY0 * (height - 1));
-                int y1 = Mathf.RoundToInt(normalizedY1 * (height - 1));
 
                 DrawLine(x0, y0, x1, y1, lineColor, 1);
             }
 
-            // Marker come linea verticale più spessa
-            int thickness = 3; // aumenti questo valore per una linea più spessa
-            for (int dx = -thickness/2; dx <= thickness/2; dx++)
+            // marker verticale
+            int thickness = 3;
+            for (int dx = -thickness / 2; dx <= thickness / 2; dx++)
             {
                 int x = markerX + dx;
                 if (x >= 0 && x < width)
                 {
                     for (int y = 0; y < height; y++)
-                        tex.SetPixel(x, y, Color.red); // colore rosso
+                        tex.SetPixel(x, y, Color.red);
                 }
             }
 

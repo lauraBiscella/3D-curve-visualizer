@@ -102,7 +102,7 @@ namespace BezierCurves
         {
             ComputeAnalytics();
             curvatureGraph.DrawGraph(curvatureValues);
-            torsionGraph.DrawGraph(torsionValues);
+            torsionGraph.DrawGraph(torsionValues, true);
         }
 
         void ComputeAnalytics()
