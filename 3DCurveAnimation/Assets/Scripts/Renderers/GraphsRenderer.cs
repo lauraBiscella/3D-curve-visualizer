@@ -10,6 +10,7 @@ namespace BezierCurves
         [SerializeField] private int width = 200;
         [SerializeField] private int height = 150;
         [SerializeField] private TextMeshProUGUI labelMax;
+        [SerializeField] private TextMeshProUGUI labelMin;
         [SerializeField] private Color lineColor = Color.green;
 
         private RawImage graphImage;
@@ -46,6 +47,9 @@ namespace BezierCurves
             if (labelMax != null)
                 labelMax.text = allowNegativeY ? Mathf.Max(Mathf.Abs(minVal), Mathf.Abs(maxVal)).ToString("F2") : maxVal.ToString("F2");
 
+            if (labelMin != null)
+                labelMin.text = allowNegativeY ? Mathf.Min(Mathf.Abs(minVal), Mathf.Abs(maxVal)).ToString("F2") : minVal.ToString("F2");
+
             float range = allowNegativeY ? Mathf.Max(Mathf.Abs(minVal), Mathf.Abs(maxVal)) : maxVal - minVal;
             if (range < 0.0001f) range = 1f;
 
@@ -74,6 +78,36 @@ namespace BezierCurves
                 int x1 = Mathf.RoundToInt((i + 1) * (width - 1f) / (count - 1));
 
                 DrawLine(x0, y0, x1, y1, lineColor, 1);
+            }
+
+            int zeroY;
+
+            if (allowNegativeY)
+            {
+                zeroY = height / 2;
+            }
+            else
+            {
+                float normalizedZero = (0 - minVal) / range;
+                zeroY = Mathf.RoundToInt(normalizedZero * (height - 1));
+            }
+
+            if (zeroY >= 0 && zeroY < height)
+            {
+                int thick = 3;
+
+                for (int dy = -thick / 2; dy <= thick / 2; dy++)
+                {
+                    int y = zeroY + dy;
+
+                    if (y >= 0 && y < height)
+                    {
+                        for (int x = 0; x < width; x++)
+                        {
+                            tex.SetPixel(x, y, new Color(1f, 1f, 1f, 1f));
+                        }
+                    }
+                }
             }
 
             // marker verticale
