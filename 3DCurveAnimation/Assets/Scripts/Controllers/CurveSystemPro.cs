@@ -13,6 +13,7 @@ namespace BezierCurves
 
         [Header("Control Points")]
         [SerializeField] private GameObject controlPointPrefab;  
+        [SerializeField] private LayerMask controlPointLayer;
         
         [Header("Curve Details")]
         [SerializeField] private int curveResolution = 100;
@@ -60,18 +61,24 @@ namespace BezierCurves
 
         void HandleMouseClick()
         {
-            if(Input.GetMouseButtonDown(0) && controlPoints.Count < 4)
+            if (Input.GetMouseButtonDown(0) && controlPoints.Count < 4)
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
 
-                if(Physics.Raycast(ray, out hit))
+                if (Physics.Raycast(ray, out hit, Mathf.Infinity, controlPointLayer)) return;
+
+                Plane plane = new Plane(-Camera.main.transform.forward,
+                                Camera.main.transform.position + Camera.main.transform.forward * 10f);
+                float distance;
+
+                if (plane.Raycast(ray, out distance))
                 {
-                    GameObject p = Instantiate(controlPointPrefab, hit.point, Quaternion.identity);
+                    Vector3 point = ray.GetPoint(distance);
+                    GameObject p = Instantiate(controlPointPrefab, point, Quaternion.identity);
                     DraggablePoint drag = p.GetComponent<DraggablePoint>();
                     drag.SetCurveSystem(this);
                     controlPoints.Add(p.transform);
-
                     curveDirty = true;
                 }
             }

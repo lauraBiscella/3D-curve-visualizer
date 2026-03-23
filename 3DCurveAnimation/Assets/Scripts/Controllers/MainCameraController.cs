@@ -12,12 +12,13 @@ namespace BezierCurves
         [SerializeField] private float maxPitch = 80f;
         [SerializeField] private float minRadius = 2f;
         [SerializeField] private float maxRadius = 50f;
+        [SerializeField] private float followSpeed = 5f;
         private float yaw = 0f;
         private float pitch = 20f;
         private float radius = 20f;
         private Vector3 target;
 
-        void Update()
+        void LateUpdate()
         {
             if (!curveSystem.HasFourElements()) return;
 
@@ -46,9 +47,15 @@ namespace BezierCurves
 
         void UpdateCameraPosition()
         {
-            Quaternion rot = Quaternion.Euler(pitch, yaw, 0f);
-            Vector3 offset = rot * new Vector3(0, 0, -radius);
-            transform.position = target + offset;
+            float yawRad = Mathf.Deg2Rad * yaw;
+            float pitchRad = Mathf.Deg2Rad * pitch;
+
+            float x = radius * Mathf.Cos(pitchRad) * Mathf.Sin(yawRad);
+            float y = radius * Mathf.Sin(pitchRad);
+            float z = radius * Mathf.Cos(pitchRad) * Mathf.Cos(yawRad);
+
+            Vector3 offset = new Vector3(x, y, z);
+            transform.position = Vector3.Lerp(transform.position, target + offset, Time.deltaTime * followSpeed);
             transform.LookAt(target);
         }
 

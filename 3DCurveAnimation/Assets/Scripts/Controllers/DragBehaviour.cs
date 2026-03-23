@@ -1,33 +1,41 @@
 using UnityEngine;
-namespace BezierCurves 
+
+namespace BezierCurves
 {
     public class DraggablePoint : MonoBehaviour
     {
         private CurveSystem curveSystem;
-        private Vector3 offset;
-        private float distance;
-
-        void OnMouseDown()
-        {
-            Debug.Log("Clicked!");
-            distance = Camera.main.WorldToScreenPoint(transform.position).z;
-            Vector3 mousePos = Input.mousePosition;
-            mousePos.z = distance;
-            offset = transform.position - Camera.main.ScreenToWorldPoint(mousePos);
-        }
+        private Plane dragPlane;
+        private Camera cam;
 
         public void SetCurveSystem(CurveSystem system)
         {
             curveSystem = system;
         }
 
+        void Awake()
+        {
+            cam = Camera.main;
+        }
+
+        void OnMouseDown()
+        {
+            dragPlane = new Plane(-cam.transform.forward, transform.position);
+        }
+
         void OnMouseDrag()
         {
-            Vector3 mousePos = Input.mousePosition;
-            mousePos.z = distance;
-            transform.position = Camera.main.ScreenToWorldPoint(mousePos) + offset;
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
 
-            curveSystem.SetCurveDirty();
+            float distance;
+
+            if (dragPlane.Raycast(ray, out distance))
+            {
+                transform.position = ray.GetPoint(distance);
+
+                if (curveSystem != null)
+                    curveSystem.SetCurveDirty();
+            }
         }
     }
 }
