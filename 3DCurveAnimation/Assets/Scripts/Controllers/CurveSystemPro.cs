@@ -94,15 +94,19 @@ namespace BezierCurves
         void OnSliderChanged(float t)
         {
             if (!HasFourElements()) return;
-            Vector3 bezierPos = BezierMath.BezierPoint(t, controlPoints);
+
+            int index = Mathf.RoundToInt(t * (curveResolution - 1));
+            float sampledT = index / (float)(curveResolution - 1);
+
+            Vector3 bezierPos = BezierMath.BezierPoint(sampledT, controlPoints);
             pointIndicator.transform.position = bezierPos;
 
             if (curvatureGraph != null)
-                curvatureGraph.SetMarkerNormalized(t); 
+                curvatureGraph.SetMarkerNormalized(sampledT); 
             if (torsionGraph != null)
-                torsionGraph.SetMarkerNormalized(t); 
+                torsionGraph.SetMarkerNormalized(sampledT); 
             if (infoPanel != null)
-                infoPanel.UpdateInfo(t);
+                infoPanel.UpdateInfo(sampledT);
         }
 
         void DrawAnalytics()
@@ -123,6 +127,7 @@ namespace BezierCurves
             {
                 float t = i/(float)(curveResolution-1);
                 Vector3 d1 = BezierMath.FirstDerivative(t, controlPoints);
+                Debug.Log(controlPoints.Count);
                 Vector3 d2 = BezierMath.SecondDerivative(t, controlPoints);
                 Vector3 d3 = BezierMath.ThirdDerivative(t, controlPoints);
                 curvature = BezierAnalytics.Curvature(d1, d2);

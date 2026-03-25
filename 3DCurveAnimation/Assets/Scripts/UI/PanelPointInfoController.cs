@@ -29,10 +29,10 @@ namespace BezierCurves
                 pointText.text = $"({p.x:F2}, {p.y:F2}, {p.z:F2})";
 
             if (curvatureText != null)
-                curvatureText.text = curvature.ToString("F3");
+                curvatureText.text = curvature.ToString("F2");
 
             if (torsionText != null)
-                torsionText.text = torsion.ToString("F3");
+                torsionText.text = torsion.ToString("F2");
         }
     }
 }
