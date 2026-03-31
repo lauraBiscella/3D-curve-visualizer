@@ -20,7 +20,7 @@ namespace BezierCurves
 
         void LateUpdate()
         {
-            if (!curveSystem.HasFourElements()) return;
+            if (!curveSystem.HasEnoughElements()) return;
 
             UpdateCenter();
             HandleInput();

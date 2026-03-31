@@ -12,7 +12,7 @@ namespace BezierCurves
 
         public void UpdateInfo(float t)
         {
-            if (!curveSystem.HasFourElements()) return;
+            if (!curveSystem.HasEnoughElements()) return;
 
             var points = curveSystem.controlPoints;
 

@@ -13,7 +13,8 @@ namespace BezierCurves
 
         [Header("Control Points")]
         [SerializeField] private GameObject controlPointPrefab;  
-        [SerializeField] private LayerMask controlPointLayer;
+        [SerializeField] private LayerMask controlPointLayer; 
+        [SerializeField] private int curveGrade = 4;
         
         [Header("Curve Details")]
         [SerializeField] private int curveResolution = 100;
@@ -37,7 +38,7 @@ namespace BezierCurves
         {
             HandleMouseClick();
 
-            if(!HasFourElements()) return;
+            if(!HasEnoughElements()) return;
             if (curveDirty)
             {
                 curveRenderer.DrawControlPolygon(controlPoints);
@@ -49,9 +50,9 @@ namespace BezierCurves
             RefreshSliderPosition();
         }
 
-        public bool HasFourElements()
+        public bool HasEnoughElements()
         {
-            return controlPoints.Count == 4;
+            return controlPoints.Count == curveGrade;
         }   
 
         public void SetCurveDirty()
@@ -61,7 +62,7 @@ namespace BezierCurves
 
         void HandleMouseClick()
         {
-            if (Input.GetMouseButtonDown(0) && controlPoints.Count < 4)
+            if (Input.GetMouseButtonDown(0) && controlPoints.Count < curveGrade)
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
@@ -86,14 +87,14 @@ namespace BezierCurves
 
         void RefreshSliderPosition()
         {
-            if (!HasFourElements()) return;
+            if (!HasEnoughElements()) return;
 
             float t = tSlider.value;
             OnSliderChanged(t);
         }
         void OnSliderChanged(float t)
         {
-            if (!HasFourElements()) return;
+            if (!HasEnoughElements()) return;
 
             int index = Mathf.RoundToInt(t * (curveResolution - 1));
             float sampledT = index / (float)(curveResolution - 1);

@@ -11,11 +11,14 @@ namespace BezierCurves
         [SerializeField] private TMP_InputField[] xInputs;
         [SerializeField] private TMP_InputField[] yInputs;
         [SerializeField] private TMP_InputField[] zInputs;
-        private bool[] inputActive = new bool[4];
+        [SerializeField] private int curveGrade;
+        private bool[] inputActive;
 
         void Start()
         {
-            for (int i = 0; i < 4; i++)
+            inputActive = new bool[curveGrade];
+            
+            for (int i = 0; i < curveGrade; i++)
             {
                 int index = i;
 
@@ -30,9 +33,9 @@ namespace BezierCurves
         }
         void Update()
         {
-            if (!curveSystem.HasFourElements()) return;
+            if (!curveSystem.HasEnoughElements()) return;
 
-            for(int i=0;i<4;i++)
+            for(int i=0;i<curveGrade;i++)
             {
                 if(curveSystem.controlPoints[i] == null)
                     continue;

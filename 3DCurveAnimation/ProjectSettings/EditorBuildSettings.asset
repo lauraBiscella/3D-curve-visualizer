@@ -4,7 +4,19 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Menu.unity
+    guid: e2084e6adb17fc4429641c90a3da727b
+  - enabled: 1
+    path: Assets/Scenes/BezierCurve3.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/BezierCurve4.unity
+    guid: 25ee7c0fb4804cf48addbfcc65bfc39e
+  - enabled: 1
+    path: Assets/Scenes/Spline.unity
+    guid: 09e34adf241b0d242a9eb67b237c573f
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 289c1b55c9541489481df5cc06664110, type: 3}
   m_UseUCBPForAssetBundles: 0
