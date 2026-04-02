@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections.Generic;
+
 
 namespace SplineCurves
 {
@@ -64,8 +66,10 @@ namespace SplineCurves
         {
             float t = (curveSystem.knots[degree] 
                     + curveSystem.knots[curveSystem.knots.Length - degree - 1]) * 0.5f;
-
-            target = BSplineMath.BSplinePoint(t, curveSystem.deBoorPoints, curveSystem.knots, degree);
+            List<Vector3> points = new List<Vector3>();
+            foreach (Transform tr in curveSystem.deBoorPoints)
+                points.Add(tr.position);
+            target = BSplineMath.BSplinePoint(t, points, curveSystem.knots, degree);
         }
     }
 }

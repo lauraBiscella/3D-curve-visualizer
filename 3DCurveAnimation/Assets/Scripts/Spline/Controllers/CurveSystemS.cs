@@ -32,17 +32,24 @@ namespace SplineCurves
         [SerializeField] private Slider tSlider;
         [SerializeField] private CurveInfoPanel infoPanel;
         [SerializeField] private GameObject pointIndicatorPrefab;
+        [Header("Slider Markers")]
+        [SerializeField] private GameObject knotMarkerPrefab;
+        private List<GameObject> knotMarkers = new List<GameObject>();
         public float[] knots = new float[11];
         public List<Transform> deBoorPoints = new List<Transform>();
         private List<float> curvatureValues = new List<float>();
-        //private List<RectTransform> nodeMarkers = new List<RectTransform>();
         private List<float> torsionValues = new List<float>();
         private GameObject pointIndicator;
         private bool curveDirty = true;
-        [SerializeField] private RectTransform markerContainer;
-        [SerializeField] private GameObject knotMarkerPrefab;
-
-        private List<RectTransform> knotMarkers = new List<RectTransform>();
+        [Header("Marker Colors")]
+        [SerializeField] private Color[] markerColors = new Color[5]
+        {
+            new Color(1f, 0f, 0f),      // rosso 255,0,0
+            new Color(0f, 1f, 0f),      // verde 0,255,0
+            new Color(0f, 0f, 1f),      // blu 0,0,255
+            new Color(1f, 1f, 0f),      // giallo 255,255,0
+            new Color(0f, 1f, 1f)       // ciano 0,255,255
+        };
 
         void Awake()
         {
@@ -53,8 +60,21 @@ namespace SplineCurves
         {
             pointIndicator = Instantiate(pointIndicatorPrefab, new Vector3(-300, -300, 0), Quaternion.identity);
             tSlider.onValueChanged.AddListener(OnSliderChanged);
-            CreateKnotMarkers();
-            UpdateKnotMarkers();
+             // Creo i 5 marker dei nodi
+            for(int i = 0; i < 5; i++)
+            {
+                GameObject marker = Instantiate(knotMarkerPrefab, tSlider.fillRect.parent);
+                marker.transform.SetAsLastSibling();
+
+                Image img = marker.GetComponent<Image>();
+                if(img == null) img = marker.GetComponentInChildren<Image>();
+                if(img != null && markerColors.Length > i) 
+                    img.color = markerColors[i];
+
+                knotMarkers.Add(marker);
+            }
+
+            UpdateKnotMarkers(); 
         }
         void Update()
         {
@@ -66,7 +86,7 @@ namespace SplineCurves
                 curveRenderer.DrawDeBoorPolygon(deBoorPoints);
                 curveRenderer.DrawControlPolygon(deBoorPoints, knots);
                 curveRenderer.DrawBSpline(deBoorPoints, knots, curveResolution, degree);
-                //DrawAnalytics();
+                DrawAnalytics();
 
                 curveDirty = false;
             }
@@ -152,91 +172,60 @@ namespace SplineCurves
         void OnSliderChanged(float t)
         {
             if (!HasEnoughElements()) return;
+            List<Vector3> points = new List<Vector3>();
+            foreach (Transform tr in deBoorPoints)
+                points.Add(tr.position);
             
-            int index = Mathf.RoundToInt(t * (curveResolution - 1));
-            float sampledT = index / (float)(curveResolution - 1);
+            float tStart = knots[degree];
+            float tEnd = knots[deBoorPoints.Count];
 
-            Vector3 bSplinePos = BSplineMath.BSplinePoint(sampledT, deBoorPoints, knots, degree);
+            float normalized = (tSlider.value - tStart) / (tEnd - tStart);
+            int index = Mathf.RoundToInt(normalized * (curveResolution - 1));
+
+            float tNew = Mathf.Lerp(tStart, tEnd, index / (float)(curveResolution - 1));
+
+            Vector3 bSplinePos = BSplineMath.BSplinePoint(tNew, points, knots, degree);
             pointIndicator.transform.position = bSplinePos;
 
             if (curvatureGraph != null)
-                curvatureGraph.SetMarkerNormalized(sampledT); 
+                curvatureGraph.SetMarker(tNew); 
             if (torsionGraph != null)
-                torsionGraph.SetMarkerNormalized(sampledT); 
+                torsionGraph.SetMarker(tNew); 
             if (infoPanel != null)
-                infoPanel.UpdateInfo(sampledT);
-        }
-
-        void CreateKnotMarkers()
-        {
-            for(int i = 3; i <= 7; i++)
-            {
-                GameObject marker = Instantiate(knotMarkerPrefab, markerContainer);
-                knotMarkers.Add(marker.GetComponent<RectTransform>());
-            }
+                infoPanel.UpdateInfo(tNew);
         }
 
         void UpdateKnotMarkers()
         {
+            float sliderMin = tSlider.minValue;
+            float sliderMax = tSlider.maxValue;
             RectTransform sliderRect = tSlider.GetComponent<RectTransform>();
-
-            float width = sliderRect.rect.width;
-            float min = tSlider.minValue;
-            float max = tSlider.maxValue;
 
             for(int i = 0; i < knotMarkers.Count; i++)
             {
-                float knotValue = knots[i + 3];
+                float t = knots[i + 3]; // u3-u7
+                float normalized = (t - sliderMin) / (sliderMax - sliderMin);
 
-                float normalized = (knotValue - min) / (max - min);
-                float x = normalized * width;
-
-                knotMarkers[i].anchoredPosition = new Vector2(x, 0);
+                Vector3 localPos = sliderRect.rect.position;
+                float xPos = normalized * sliderRect.rect.width;
+                knotMarkers[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(xPos, 0);
             }
         }
-
-        /*
-        void RefreshSliderPosition()
-        {
-            if (!HasEnoughElements()) return;
-
-            float t = tSlider.value;
-            OnSliderChanged(t);
-        }
-        void OnSliderChanged(float t)
-        {
-            if (!HasEnoughElements()) return;
-
-            int index = Mathf.RoundToInt(t * (curveResolution - 1));
-            float normalizedT = index / (float)(curveResolution - 1);
-
-            float samplet = Mathf.Lerp(
-                knots[degree],
-                knots[controlPoints.Count],
-                normalizedT
-            );
-
-            Vector3 splinePos = BSplineMath.BSplinePoint(samplet, controlPoints, knots, degree);
-            pointIndicator.transform.position = splinePos;
-
-            for(int i = 0; i < nodeMarkers.Count; i++)
-            {
-                nodeMarkers[i].GetComponent<UnityEngine.UI.Image>().color =
-                    (t >= knots[i] && t < knots[i + 1]) ? Color.yellow : Color.white;
-            }
-            if (curvatureGraph != null)
-                curvatureGraph.SetMarkerNormalized(samplet); 
-            if (torsionGraph != null)
-                torsionGraph.SetMarkerNormalized(samplet); 
-            if (infoPanel != null)
-                infoPanel.UpdateInfo(samplet);
-        }
-
         void DrawAnalytics()
         {
             ComputeAnalytics();
-            curvatureGraph.DrawGraph(curvatureValues);
-            torsionGraph.DrawGraph(torsionValues, true);
+            List<float> tValues = new List<float>();
+            float tStart = knots[degree];
+            float tEnd = knots[deBoorPoints.Count];
+
+            for (int i = 0; i < curveResolution; i++)
+            {
+                float t = Mathf.Lerp(tStart, tEnd, i / (float)(curveResolution - 1));
+                tValues.Add(t);
+            }
+
+            curvatureGraph.DrawGraph(curvatureValues, tValues);
+            torsionGraph.DrawGraph(torsionValues, tValues, true);
         }
 
         void ComputeAnalytics()
@@ -245,26 +234,24 @@ namespace SplineCurves
             torsionValues.Clear();
             float curvature = 0;
             float torsion = 0;
+            float tStart = knots[degree];
+            float tEnd = knots[deBoorPoints.Count];
+            List<Vector3> points = new List<Vector3>();
+            foreach (Transform tr in deBoorPoints)
+                points.Add(tr.position);
 
             for(int i=0;i<curveResolution;i++)
             {
-                float normalizedT = i/(float)(curveResolution-1);
-
-                float t = Mathf.Lerp(
-                    knots[degree],
-                    knots[controlPoints.Count],
-                    normalizedT
-                );
-                Vector3 d1 = BSplineMath.FirstDerivative(t, controlPoints, knots, degree);
-                Debug.Log(controlPoints.Count);
-                Vector3 d2 = BSplineMath.SecondDerivative(t, controlPoints, knots, degree);
-                Vector3 d3 = BSplineMath.ThirdDerivative(t, controlPoints, knots, degree);
+                float t = tStart + (tEnd - tStart) * (i / (float)(curveResolution - 1));
+                Vector3 d1 = BSplineMath.BSplineFirstDerivative(t, points, knots, degree);
+                Vector3 d2 = BSplineMath.BSplineSecondDerivative(t, points, knots, degree);
+                Vector3 d3 = BSplineMath.BSplineThirdDerivative(t, points, knots, degree);
                 curvature = BSplineAnalytics.Curvature(d1, d2);
                 torsion = BSplineAnalytics.Torsion(d1, d2, d3);
                 curvatureValues.Add(curvature);
                 torsionValues.Add(torsion);
             }
-        }*/
+        }
 
     }
 }

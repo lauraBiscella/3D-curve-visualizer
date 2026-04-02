@@ -4,24 +4,18 @@ namespace SplineCurves
 {
     public static class BSplineAnalytics
     {
-        public static float Curvature(Vector3 d1, Vector3 d2)
+        public static float Curvature(Vector3 r1, Vector3 r2)
         {
-            float denom = Mathf.Pow(d1.magnitude, 3);
-
-            if (denom < 0.0001f)
-                return 0;
-
-            return Vector3.Cross(d1, d2).magnitude / denom;
+            return Vector3.Cross(r1, r2).magnitude / Mathf.Pow(r1.magnitude, 3);
         }
 
-        public static float Torsion(Vector3 d1, Vector3 d2, Vector3 d3)
+        public static float Torsion(Vector3 r1, Vector3 r2, Vector3 r3)
         {
-            float crossMag = Vector3.Cross(d1, d2).magnitude;
-
-            if (crossMag < 0.0001f)
-                return 0;
-
-            return Vector3.Dot(Vector3.Cross(d1, d2), d3) / (crossMag * crossMag);
+            Vector3 cross = Vector3.Cross(r1, r2);
+            float denom = cross.sqrMagnitude;
+            if (denom < 1e-6f) return 0f; // evita instabilità
+            return Vector3.Dot(cross, r3) / denom;
         }
+
     }
 }

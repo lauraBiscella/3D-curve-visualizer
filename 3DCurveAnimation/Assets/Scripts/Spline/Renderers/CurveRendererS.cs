@@ -70,10 +70,13 @@ namespace SplineCurves
             bSplineCurve.positionCount = resolution;
             float tStart = knots[degree];
             float tEnd = knots[deBoorPoints.Count];
+            List<Vector3> points = new List<Vector3>();
+            foreach (Transform tr in deBoorPoints)
+                points.Add(tr.position);
             for (int i = 0; i < resolution; i++)
             {    
                 float t = tStart + (tEnd - tStart) * (i / (float)(resolution - 1));
-                Vector3 p = BSplineMath.BSplinePoint(t, deBoorPoints, knots, degree);
+                Vector3 p = BSplineMath.BSplinePoint(t, points, knots, degree);
                 bSplineCurve.SetPosition(i, p);
             }
         }

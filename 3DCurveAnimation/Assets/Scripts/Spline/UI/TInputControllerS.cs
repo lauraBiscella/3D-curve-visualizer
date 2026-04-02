@@ -31,7 +31,7 @@ namespace SplineCurves
         {
             if(float.TryParse(value, out float v))
             {
-                v = Mathf.Clamp01(v);
+                v = Mathf.Clamp(v, slider.minValue, slider.maxValue);
                 slider.value = v;
             }
         }

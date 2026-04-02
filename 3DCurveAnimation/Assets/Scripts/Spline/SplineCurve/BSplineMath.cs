@@ -76,11 +76,11 @@ namespace SplineCurves
             return cp;
         }
 
-        public static Vector3 BSplinePoint(float t, List<Transform> deBoorPoints, float[] knots, int degree)
+        public static Vector3 BSplinePoint(float t, List<Vector3> deBoorPoints, float[] knots, int degree)
         {
             int n = deBoorPoints.Count - 1;
-            if (t >= knots[n + 1]) return deBoorPoints[n].position;
-            if (t <= knots[degree]) return deBoorPoints[0].position;
+            if (t >= knots[n + 1]) return deBoorPoints[n];
+            if (t <= knots[degree]) return deBoorPoints[0];
             
             int k = degree;
             for (int i = degree; i <= n; i++)
@@ -91,7 +91,7 @@ namespace SplineCurves
                 }
             Vector3[] d = new Vector3[degree + 1];
             for (int j = 0; j <= degree; j++)
-                d[j] = deBoorPoints[k - degree + j].position;
+                d[j] = deBoorPoints[k - degree + j];
             for (int r = 1; r <= degree; r++)
             {
                 for (int j = degree; j >= r; j--)
@@ -109,44 +109,54 @@ namespace SplineCurves
             }
             return d[degree];
         }
-
-        /*public static Vector3 FirstDerivative(float t, List<Transform> cp, List<float> knots, int degree)
+        public static Vector3 BSplineFirstDerivative(float t, List<Vector3> points, float[] knots, int degree)
         {
-            float dt = 0.0005f;
+            List<Vector3> dPoints = new List<Vector3>();
+            int n = points.Count - 1;
+            for (int i = 0; i < n; i++)
+            {
+                float denom = knots[i + degree + 1] - knots[i + 1];
+                Vector3 diff = denom > 0 ? degree * (points[i + 1] - points[i]) / denom : Vector3.zero;
+                dPoints.Add(diff);
+            }
 
-            return
-            (BSplinePoint(t+dt,cp,knots,degree)
-            -BSplinePoint(t-dt,cp,knots,degree))/(2*dt);
+            float[] newKnots = ReduceKnots(knots);
+            return BSplinePoint(t, dPoints, newKnots, degree - 1);
         }
 
-
-        public static Vector3 SecondDerivative(float t,
-                                               List<Transform> cp,
-                                               List<float> knots,
-                                               int degree)
+        // --- Derivata seconda ---
+        public static Vector3 BSplineSecondDerivative(float t, List<Vector3> points, float[] knots, int degree)
         {
-            float dt = 0.0005f;
-
-            return
-            (BSplinePoint(t+dt,cp,knots,degree)
-            -2*BSplinePoint(t,cp,knots,degree)
-            +BSplinePoint(t-dt,cp,knots,degree))/(dt*dt);
+            List<Vector3> firstDer = new List<Vector3>();
+            int n = points.Count - 1;
+            for (int i = 0; i < n; i++)
+            {
+                float denom = knots[i + degree + 1] - knots[i + 1];
+                Vector3 diff = denom > 0 ? degree * (points[i + 1] - points[i]) / denom : Vector3.zero;
+                firstDer.Add(diff);
+            }
+            return BSplineFirstDerivative(t, firstDer, ReduceKnots(knots), degree - 1);
         }
 
-
-        public static Vector3 ThirdDerivative(float t,
-                                              List<Transform> cp,
-                                              List<float> knots,
-                                              int degree)
+        // --- Derivata terza ---
+        public static Vector3 BSplineThirdDerivative(float t, List<Vector3> points, float[] knots, int degree)
         {
-            float dt = 0.0005f;
+            List<Vector3> secondDer = new List<Vector3>();
+            int n = points.Count - 1;
+            for (int i = 0; i < n; i++)
+            {
+                float denom = knots[i + degree + 1] - knots[i + 1];
+                Vector3 diff = denom > 0 ? degree * (points[i + 1] - points[i]) / denom : Vector3.zero;
+                secondDer.Add(diff);
+            }
+            return BSplineSecondDerivative(t, secondDer, ReduceKnots(knots), degree - 1);
+        }
 
-            return
-            (BSplinePoint(t+2*dt,cp,knots,degree)
-            -2*BSplinePoint(t+dt,cp,knots,degree)
-            +2*BSplinePoint(t-dt,cp,knots,degree)
-            -BSplinePoint(t-2*dt,cp,knots,degree))
-            /(2*dt*dt*dt);
-        }*/
+        static float[] ReduceKnots(float[] knots, int reduceBy = 1)
+        {
+            float[] newKnots = new float[knots.Length - 2 * reduceBy];
+            for (int i = reduceBy; i < knots.Length - reduceBy; i++) newKnots[i - reduceBy] = knots[i];
+            return newKnots;
+        }
     }
 }
