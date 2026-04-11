@@ -6642,7 +6642,7 @@ MonoBehaviour:
   curveRenderer: {fileID: 359005334}
   curvatureGraph: {fileID: 818356442}
   torsionGraph: {fileID: 448006546}
-  deBoorPointPrefab: {fileID: 284610041317844020, guid: 3fb16bc1b11d78e4dbd947c5cafa3cce, type: 3}
+  deBoorPointPrefab: {fileID: 284610041317844020, guid: ed56bcd18c9b1524983bd99a290c1421, type: 3}
   controlPointLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -23066,7 +23066,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Torision T(t)
+  m_text: Torsion T(t)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a013add8d116cdb46834a6f9cddba455, type: 2}
   m_sharedMaterial: {fileID: 5927705977704975764, guid: a013add8d116cdb46834a6f9cddba455, type: 2}
