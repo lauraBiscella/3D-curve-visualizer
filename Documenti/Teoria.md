@@ -59,7 +59,7 @@ La curvatura è intepretabile come quanto velocemente ruota la tangente.
 
 La torsione è una funziona scalare definita per ogni punto della curva che misura quanto la curva si allontana dal piano osculatore, cioè quanto esso ruota nello spazio.
 
-Essa è definita per curve fortemente regolari di classe $C^3$, con questa equazione:
+Essa è definita per curve fortemente regolari di classe $C^2$, con questa equazione:
 
 $$\tau(t) = \frac{(\dot{P}(t) \times \ddot{P}(t))\times \dddot{P}(t)}{||\dot{P}(t) \times \ddot{P}(t)||^2}$$
 
@@ -71,6 +71,9 @@ $$\tau(t) = \frac{(\dot{P}(t) \times \ddot{P}(t))\times \dddot{P}(t)}{||\dot{P}(
 + Più la torsione è grande più il piano osculatore si muove rapidamente, quindi la torsione può essere interpretata come: quanto velocemente la curva si discosta dall'essere una curva piana.
 + Il segno positivo o negativo della torsione dipende dal verso in cui viene percorso il supporto della curva e denota se il piano osculatore sta ruotando in un verso o nell'altro, cioè se la curva si trova nel semispazio superiore o inferiore al piano osculatore. 
 + Massimi e minimi rappresentano forti twist della curva.
+
+## Piano osculatore
+TO DO
 
 ## Teorema di rigidità
 Una curva che sia definita su un intervallo chiuso e limitato nello spazio è determinata unicamente, a meno di movimenti rigidi, dalle funzioni curvatura e torsione. 
@@ -170,3 +173,6 @@ Questo fenomeno è chiamato incollamento nei nodi.
 Anche per le B-spline, essendo curve parametriche nello spazio, curvatura e torsione sono definite tramite le derivate.
 
 La struttura a tratti della B-spline implica che queste quantità siano polinomiali su ciascun intervallo tra nodi.
+
+### Formule passaggio da beziere a de boor
+TO DO

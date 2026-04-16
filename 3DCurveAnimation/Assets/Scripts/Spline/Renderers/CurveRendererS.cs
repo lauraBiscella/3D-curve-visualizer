@@ -15,6 +15,7 @@ namespace SplineCurves
         private bool deBoorPolygonInstanciated = false;
         private bool bSplineCurveInstanciated = false;
         private bool controlPolygonInstanciated = false;
+        private bool controlPolygonVisible = false;
         private List<LineRenderer> controlPointTicks = new List<LineRenderer>();
 
         public void DrawDeBoorPolygon(List<Transform> points)
@@ -41,6 +42,7 @@ namespace SplineCurves
                 controlPolygon = cp.GetComponent<LineRenderer>();
                 controlPolygonInstanciated = true;
             }
+            controlPolygon.gameObject.SetActive(controlPolygonVisible);
 
             List<Vector3> deBoor = new List<Vector3>();
 
@@ -89,6 +91,7 @@ namespace SplineCurves
             while(controlPointTicks.Count < points.Count)
             {
                 GameObject tick = Instantiate(controlPointTickPrefab);
+                tick.SetActive(controlPolygonVisible);
                 controlPointTicks.Add(tick.GetComponent<LineRenderer>());
             }
 
@@ -102,6 +105,19 @@ namespace SplineCurves
                 controlPointTicks[i].positionCount = 2;
                 controlPointTicks[i].SetPosition(0, a);
                 controlPointTicks[i].SetPosition(1, b);
+            }
+        }
+        public void SetControlPolygonVisibility(bool visible)
+        {
+            controlPolygonVisible = visible;
+
+            if (controlPolygon != null)
+                controlPolygon.gameObject.SetActive(visible);
+
+            foreach (var tick in controlPointTicks)
+            {
+                if (tick != null)
+                    tick.gameObject.SetActive(visible);
             }
         }
     }

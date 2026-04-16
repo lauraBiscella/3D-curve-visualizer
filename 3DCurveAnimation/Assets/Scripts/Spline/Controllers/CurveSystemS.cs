@@ -10,6 +10,7 @@ namespace SplineCurves
         [SerializeField] private CurveRenderer curveRenderer;
         [SerializeField] private GraphRenderer curvatureGraph;
         [SerializeField] private GraphRenderer torsionGraph;
+        private bool controlPolygonVisible = false;
 
         [Header("De Boor Points")]
         [SerializeField] private GameObject deBoorPointPrefab;  
@@ -28,10 +29,21 @@ namespace SplineCurves
         [SerializeField] private Slider u6Slider;
         [SerializeField] private Slider u7Slider;
 
+        [Header("Osculating Plane")]
+        [SerializeField] private GameObject osculatingPlanePrefab;
+        private GameObject osculatingPlaneInstance;
+        private bool planeVisible = false;
+
+        [Header("Frenet Frame")]
+        [SerializeField] private GameObject vectorPrefab;
+        private GameObject binormalVector;  
+        private bool vectorVisible = false;
+
         [Header("UI Panels")]
         [SerializeField] private Slider tSlider;
         [SerializeField] private CurveInfoPanel infoPanel;
         [SerializeField] private GameObject pointIndicatorPrefab;
+
         [Header("Slider Markers")]
         [SerializeField] private GameObject knotMarkerPrefab;
         private List<GameObject> knotMarkers = new List<GameObject>();
@@ -58,7 +70,10 @@ namespace SplineCurves
 
         void Start()
         {
+            curveRenderer.SetControlPolygonVisibility(controlPolygonVisible);
             pointIndicator = Instantiate(pointIndicatorPrefab, new Vector3(-300, -300, 0), Quaternion.identity);
+            osculatingPlaneInstance = Instantiate(osculatingPlanePrefab, Vector3.zero, Quaternion.identity);
+            binormalVector = Instantiate(vectorPrefab);
             tSlider.onValueChanged.AddListener(OnSliderChanged);
              // Creo i 5 marker dei nodi
             for(int i = 0; i < 5; i++)
@@ -84,7 +99,8 @@ namespace SplineCurves
             if (curveDirty)
             {
                 curveRenderer.DrawDeBoorPolygon(deBoorPoints);
-                curveRenderer.DrawControlPolygon(deBoorPoints, knots);
+                if (controlPolygonVisible)
+                    curveRenderer.DrawControlPolygon(deBoorPoints, knots);
                 curveRenderer.DrawBSpline(deBoorPoints, knots, curveResolution, degree);
                 DrawAnalytics();
 
@@ -101,6 +117,29 @@ namespace SplineCurves
         public void SetCurveDirty()
         {
             curveDirty = true;
+        }
+
+        public void ToggleVectorVisibility()
+        {
+            vectorVisible = !vectorVisible;
+            planeVisible = !planeVisible;
+
+            if (binormalVector != null)
+                binormalVector.SetActive(vectorVisible);
+            if (osculatingPlaneInstance != null)
+                osculatingPlaneInstance.SetActive(planeVisible);
+        }
+
+        public void ToggleControlPolygonVisibility()
+        {
+            controlPolygonVisible = !controlPolygonVisible;
+
+            if (curveRenderer != null)
+            {
+                curveRenderer.SetControlPolygonVisibility(controlPolygonVisible);
+                if (controlPolygonVisible && HasEnoughElements())
+                    curveDirty = true;
+            }
         }
 
         void HandleMouseClick()
@@ -186,6 +225,17 @@ namespace SplineCurves
 
             Vector3 bSplinePos = BSplineMath.BSplinePoint(tNew, points, knots, degree);
             pointIndicator.transform.position = bSplinePos;
+            Vector3 d1 = BSplineMath.BSplineFirstDerivative(tNew, points, knots, degree);
+            Vector3 d2 = BSplineMath.BSplineSecondDerivative(tNew, points, knots, degree);
+
+            // Tangente
+            Vector3 T = d1.normalized;
+
+            // Binormale (normale del piano)
+            Vector3 B = Vector3.Cross(d1, d2).normalized;
+
+            // Normale
+            Vector3 N = Vector3.Cross(B, T).normalized;
 
             if (curvatureGraph != null)
                 curvatureGraph.SetMarker(tNew); 
@@ -193,6 +243,19 @@ namespace SplineCurves
                 torsionGraph.SetMarker(tNew); 
             if (infoPanel != null)
                 infoPanel.UpdateInfo(tNew);
+            if (osculatingPlaneInstance != null)
+            {
+                osculatingPlaneInstance.transform.position = bSplinePos;
+                osculatingPlaneInstance.transform.rotation =
+                    Quaternion.LookRotation(T, B);
+            }
+            if (binormalVector != null)
+            {
+                float scale = 0.2f;
+                binormalVector.transform.position = bSplinePos;
+                binormalVector.transform.rotation = Quaternion.FromToRotation(Vector3.up, B);
+                binormalVector.transform.localScale = new Vector3(1, scale, 1);
+            }
         }
 
         void UpdateKnotMarkers()
