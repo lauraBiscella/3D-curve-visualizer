@@ -62,7 +62,7 @@ Lo spazio 3D posizionato sul lato sinistro di ogni ambiente di creazione conterr
 + Linea bianca: la curva risultante
 + Pallino giallo: marker identificativo di un punto specifico della curva
 + Freccia gialla: vettore binormale
-+ Piano giallo; piano osculatore
++ Piano giallo: piano osculatore
 
 ![curvaSpline](Immagini/SectionSpline.png)
 ***Solo per B-Spline:*** 
