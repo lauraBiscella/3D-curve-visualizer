@@ -264,13 +264,15 @@ namespace SplineCurves
             float sliderMax = tSlider.maxValue;
             RectTransform sliderRect = tSlider.GetComponent<RectTransform>();
 
-            for(int i = 0; i < knotMarkers.Count; i++)
+            float width = sliderRect.rect.width;
+
+            for (int i = 0; i < knotMarkers.Count; i++)
             {
-                float t = knots[i + 3]; // u3-u7
+                float t = knots[i + 3];
                 float normalized = (t - sliderMin) / (sliderMax - sliderMin);
 
-                Vector3 localPos = sliderRect.rect.position;
-                float xPos = normalized * sliderRect.rect.width;
+                float xPos = normalized * width;
+
                 knotMarkers[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(xPos, 0);
             }
         }
