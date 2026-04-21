@@ -265,13 +265,14 @@ namespace SplineCurves
             RectTransform sliderRect = tSlider.GetComponent<RectTransform>();
 
             float width = sliderRect.rect.width;
+            float pivotOffset = width * sliderRect.pivot.x;
 
             for (int i = 0; i < knotMarkers.Count; i++)
             {
                 float t = knots[i + 3];
                 float normalized = (t - sliderMin) / (sliderMax - sliderMin);
 
-                float xPos = normalized * width;
+                float xPos = normalized * width - pivotOffset;
 
                 knotMarkers[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(xPos, 0);
             }
